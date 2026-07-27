@@ -4,15 +4,35 @@ import SkateGame from './SkateGame';
 import { db } from './firebase';
 import { collection, addDoc, onSnapshot, query, orderBy, deleteDoc, doc } from 'firebase/firestore';
 
-// Merch Products (Hats and T-Shirts)
+// Merch Categories
 const productsData = [
-  { id: 'raggedy-hat-1', name: 'Well Raggedy Classic Hat', priceJMD: 'J$3,500.00', priceUSD: '$23.00 USD', category: 'Hat', badge: 'NEW', badgeType: 'badge-acid', image: '/Merch/Hats/IMG_3085.PNG', description: 'Classic fit with adjustable strap.' },
-  { id: 'raggedy-hat-2', name: 'Trenchtown Hat', priceJMD: 'J$3,500.00', priceUSD: '$23.00 USD', category: 'Hat', badge: '100% COTTON', badgeType: 'badge-pink', image: '/Merch/Hats/IMG_3086.PNG', description: 'Comfortable day-to-day headwear.' },
-  { id: 'raggedy-hat-3', name: 'Speedwheels Hat', priceJMD: 'J$3,500.00', priceUSD: '$23.00 USD', category: 'Hat', badge: 'PREMIUM', badgeType: 'badge-acid', image: '/Merch/Hats/IMG_3087.PNG', description: 'Embroidered logo on front.' },
-  { id: 'raggedy-tee-1', name: 'Downtown Grind Tee', priceJMD: 'J$4,500.00', priceUSD: '$30.00 USD', category: 'T-Shirt', badge: 'EXCLUSIVE', badgeType: 'badge-acid', image: '/Merch/T Shirt/IMG_3089.PNG', description: 'Heavyweight vintage washed t-shirt.' },
-  { id: 'raggedy-tee-2', name: 'Raggedy Street Tee', priceJMD: 'J$4,500.00', priceUSD: '$30.00 USD', category: 'T-Shirt', badge: 'PREMIUM', badgeType: 'badge-pink', image: '/Merch/T Shirt/IMG_3090.PNG', description: 'Premium cotton blend.' },
-  { id: 'raggedy-tee-3', name: 'Trenchtown Shred Tee', priceJMD: 'J$4,500.00', priceUSD: '$30.00 USD', category: 'T-Shirt', badge: 'LIMITED', badgeType: 'badge-acid', image: '/Merch/T Shirt/IMG_3091.PNG', description: 'High-performance tee with custom print.' },
-  { id: 'raggedy-tee-4', name: 'Rude Boy Custom Tee', priceJMD: 'J$4,500.00', priceUSD: '$30.00 USD', category: 'T-Shirt', badge: 'RESTOCKED', badgeType: 'badge-pink', image: '/Merch/T Shirt/IMG_3092.PNG', description: 'Silicon print graphic on chest.' }
+  { 
+    id: 'raggedy-hats', 
+    name: 'Well Raggedy Hats', 
+    priceJMD: 'J$3,500.00', 
+    priceUSD: '$23.00 USD', 
+    badge: 'HATS', 
+    badgeType: 'badge-acid', 
+    images: [
+      '/Merch/Hats/IMG_3085.PNG', 
+      '/Merch/Hats/IMG_3086.PNG', 
+      '/Merch/Hats/IMG_3087.PNG'
+    ] 
+  },
+  { 
+    id: 'raggedy-tees', 
+    name: 'Well Raggedy T Shirts', 
+    priceJMD: 'J$4,500.00', 
+    priceUSD: '$30.00 USD', 
+    badge: 'TEES', 
+    badgeType: 'badge-pink', 
+    images: [
+      '/Merch/T Shirt/IMG_3089.PNG', 
+      '/Merch/T Shirt/IMG_3090.PNG', 
+      '/Merch/T Shirt/IMG_3091.PNG', 
+      '/Merch/T Shirt/IMG_3092.PNG'
+    ] 
+  }
 ];
 
 // Skate and Tour video pool
@@ -44,6 +64,7 @@ function App() {
   // Media rotation
   const [currentMediaIndex, setCurrentMediaIndex] = useState(0);
   const [currentTourIndex, setCurrentTourIndex] = useState(0);
+  const [merchImageIndex, setMerchImageIndex] = useState(0);
 
   // Firestore Data
   const [tags, setTags] = useState([]);
@@ -96,6 +117,14 @@ function App() {
       setCurrentTourIndex((prev) => (prev + 1) % tourImages.length);
     }, 5000);
     return () => clearInterval(tourInterval);
+  }, []);
+
+  // Merch Image Rotator
+  useEffect(() => {
+    const merchInterval = setInterval(() => {
+      setMerchImageIndex((prev) => prev + 1);
+    }, 3000);
+    return () => clearInterval(merchInterval);
   }, []);
 
   const handleAddTag = async (e) => {
@@ -305,7 +334,7 @@ function App() {
             <div key={prod.id} className="merch-card">
               <div className="merch-img-container">
                 <span className={`merch-badge ${prod.badgeType === 'badge-pink' ? 'badge-limited' : 'badge-acid'}`}>{prod.badge}</span>
-                <img src={prod.image} alt={prod.name} className="merch-img" />
+                <img src={prod.images[merchImageIndex % prod.images.length]} alt={prod.name} className="merch-img" />
               </div>
               <div className="merch-info">
                 <h3 style={{ fontSize: '1.4rem', fontWeight: 900, marginBottom: '0.8rem', color: 'white' }}>{prod.name}</h3>
