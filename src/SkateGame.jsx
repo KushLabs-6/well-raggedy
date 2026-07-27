@@ -50,15 +50,18 @@ const SkateGame = () => {
     e.preventDefault();
     if (!playerName.trim() || scoreSubmitted) return;
     
+    setScoreSubmitted(true);
+    
     try {
       await addDoc(collection(db, 'skate_scores'), {
         name: playerName.trim(),
         score: score,
         timestamp: new Date()
       });
-      setScoreSubmitted(true);
+      startGame();
     } catch(e) {
       console.error("Error submitting score:", e);
+      setScoreSubmitted(false);
     }
   };
 
