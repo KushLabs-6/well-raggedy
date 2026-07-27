@@ -21,7 +21,7 @@ const productsData = [
   },
   { 
     id: 'raggedy-tees', 
-    name: 'Well Raggedy T Shirts', 
+    name: 'Well Raggedy Shirts', 
     priceJMD: 'J$4,500.00', 
     priceUSD: '$30.00 USD', 
     badge: 'TEES', 
