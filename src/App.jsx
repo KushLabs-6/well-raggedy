@@ -4,16 +4,15 @@ import SkateGame from './SkateGame';
 import { db } from './firebase';
 import { collection, addDoc, onSnapshot, query, orderBy, deleteDoc, doc } from 'firebase/firestore';
 
-// 8 Merch Products (T-Shirts focused)
+// Merch Products (Hats and T-Shirts)
 const productsData = [
-  { id: 'raggedy-tee-1', name: 'Kingston Punk Core Tee', priceJMD: 'J$4,500.00', priceUSD: '$30.00 USD', category: 'Apparel', badge: '100% COTTON', badgeType: 'badge-acid', image: '/Merch/IMG_3085.PNG', description: 'Heavyweight vintage washed t-shirt.' },
-  { id: 'raggedy-tee-2', name: 'Trenchtown Thrash Tee', priceJMD: 'J$4,500.00', priceUSD: '$30.00 USD', category: 'Apparel', badge: 'LAST 5 LEFT', badgeType: 'badge-pink', image: '/Merch/IMG_3086.PNG', description: 'Widened fit optimized for transition skating.' },
-  { id: 'raggedy-tee-3', name: 'Rude Boy Custom Tee', priceJMD: 'J$4,500.00', priceUSD: '$30.00 USD', category: 'Apparel', badge: 'NEW', badgeType: 'badge-acid', image: '/Merch/IMG_3087.PNG', description: 'Silicon print graphic on chest.' },
-  { id: 'raggedy-tee-4', name: 'Speedwheels Logo Tee', priceJMD: 'J$4,500.00', priceUSD: '$30.00 USD', category: 'Apparel', badge: 'RESTOCKED', badgeType: 'badge-pink', image: '/Merch/IMG_3088.PNG', description: 'High-performance moisture wicking.' },
-  { id: 'raggedy-tee-5', name: 'Downtown Grind Tee', priceJMD: 'J$4,500.00', priceUSD: '$30.00 USD', category: 'Apparel', badge: 'EXCLUSIVE', badgeType: 'badge-acid', image: '/Merch/IMG_3089.PNG', description: 'Heavyweight vintage washed t-shirt with screen-printed distressed logo.' },
-  { id: 'raggedy-tee-6', name: 'Raggedy Street Tee', priceJMD: 'J$4,500.00', priceUSD: '$30.00 USD', category: 'Apparel', badge: 'PREMIUM', badgeType: 'badge-pink', image: '/Merch/IMG_3090.PNG', description: 'Premium cotton blend.' },
-  { id: 'raggedy-tee-7', name: 'Skate Beanie / Cap Combo', priceJMD: 'J$2,500.00', priceUSD: '$16.00 USD', category: 'Apparel', badge: 'ONE SIZE', badgeType: 'badge-acid', image: '/Merch/IMG_3091.PNG', description: 'Comfortable headwear for skate sessions.' },
-  { id: 'raggedy-tee-8', name: 'Trenchtown Shred Tee', priceJMD: 'J$4,500.00', priceUSD: '$30.00 USD', category: 'Apparel', badge: 'LIMITED', badgeType: 'badge-pink', image: '/Merch/IMG_3092.PNG', description: 'High-performance tee with custom print.' }
+  { id: 'raggedy-hat-1', name: 'Well Raggedy Classic Hat', priceJMD: 'J$3,500.00', priceUSD: '$23.00 USD', category: 'Hat', badge: 'NEW', badgeType: 'badge-acid', image: '/Merch/Hats/IMG_3085.PNG', description: 'Classic fit with adjustable strap.' },
+  { id: 'raggedy-hat-2', name: 'Trenchtown Hat', priceJMD: 'J$3,500.00', priceUSD: '$23.00 USD', category: 'Hat', badge: '100% COTTON', badgeType: 'badge-pink', image: '/Merch/Hats/IMG_3086.PNG', description: 'Comfortable day-to-day headwear.' },
+  { id: 'raggedy-hat-3', name: 'Speedwheels Hat', priceJMD: 'J$3,500.00', priceUSD: '$23.00 USD', category: 'Hat', badge: 'PREMIUM', badgeType: 'badge-acid', image: '/Merch/Hats/IMG_3087.PNG', description: 'Embroidered logo on front.' },
+  { id: 'raggedy-tee-1', name: 'Downtown Grind Tee', priceJMD: 'J$4,500.00', priceUSD: '$30.00 USD', category: 'T-Shirt', badge: 'EXCLUSIVE', badgeType: 'badge-acid', image: '/Merch/T Shirt/IMG_3089.PNG', description: 'Heavyweight vintage washed t-shirt.' },
+  { id: 'raggedy-tee-2', name: 'Raggedy Street Tee', priceJMD: 'J$4,500.00', priceUSD: '$30.00 USD', category: 'T-Shirt', badge: 'PREMIUM', badgeType: 'badge-pink', image: '/Merch/T Shirt/IMG_3090.PNG', description: 'Premium cotton blend.' },
+  { id: 'raggedy-tee-3', name: 'Trenchtown Shred Tee', priceJMD: 'J$4,500.00', priceUSD: '$30.00 USD', category: 'T-Shirt', badge: 'LIMITED', badgeType: 'badge-acid', image: '/Merch/T Shirt/IMG_3091.PNG', description: 'High-performance tee with custom print.' },
+  { id: 'raggedy-tee-4', name: 'Rude Boy Custom Tee', priceJMD: 'J$4,500.00', priceUSD: '$30.00 USD', category: 'T-Shirt', badge: 'RESTOCKED', badgeType: 'badge-pink', image: '/Merch/T Shirt/IMG_3092.PNG', description: 'Silicon print graphic on chest.' }
 ];
 
 // Skate and Tour video pool
@@ -22,14 +21,19 @@ const mediaPool = [
   { type: 'skate', src: '/Clips/clip 3.mp4' },
   { type: 'tour', src: '/Tour/1dac3bc3-11dc-43be-9956-8f1cb643aa25.mp4' },
   { type: 'tour', src: '/Tour/303f2b6c-419a-4e95-8703-77f110ee3a15.mp4' },
-  { type: 'tour', src: '/Tour/741de489-96d9-4071-87a5-a9a3f81d637b.mp4' }
+  { type: 'tour', src: '/Tour/741de489-96d9-4071-87a5-a9a3f81d637b.mp4' },
+  { type: 'tour', src: '/Tour/804913d2-e974-46aa-9203-fa21d41c38c1.mp4' },
+  { type: 'tour', src: '/Tour/af41c8d9-5527-4e5a-a05a-0f497c9fcdad.mp4' }
 ];
 
 const tourImages = [
   '/Tour/04b7b34b-8107-4209-bfdc-32abc9a9fefa.jpg',
   '/Tour/07d30bbd-3542-42fb-b1d4-b3869a0e85cf.jpg',
   '/Tour/1a8b59dd-9657-4758-be9f-9a2dcb84ce6a.jpg',
-  '/Tour/1c98634a-796b-43ec-84c1-6a5ed6ade7a1.jpg'
+  '/Tour/1c98634a-796b-43ec-84c1-6a5ed6ade7a1.jpg',
+  '/Tour/2bf1eada-e59d-44a1-b951-c1cc2308fc58.jpg',
+  '/Tour/42d70f59-e074-490d-b8d9-24b8acbb4e0c.jpg',
+  '/Tour/63aae9a0-aecb-4d49-afa2-331cd4e4501a.jpg'
 ];
 
 function App() {
