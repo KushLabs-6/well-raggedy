@@ -370,7 +370,7 @@ function App() {
       </div>
 
       {/* Main Header / Navigation */}
-      <header style={{ padding: '2rem', borderBottom: '1px solid var(--border-grunge)', background: 'rgba(7,7,9,0.9)', backdropFilter: 'blur(10px)', position: 'sticky', top: 0, zIndex: 100 }}>
+      <header className="main-header">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', maxWidth: '1200px', margin: '0 auto', flexWrap: 'wrap', gap: '1rem' }}>
           
           <div className="logo-container" onClick={triggerSecretAdmin}>
@@ -382,7 +382,7 @@ function App() {
             />
           </div>
 
-          <nav style={{ display: 'flex', gap: '2rem', alignItems: 'center', flexWrap: 'wrap' }}>
+          <nav className="main-nav">
             <a href="#tours" style={{ color: 'white', textDecoration: 'none', fontWeight: 900 }}>TOURS</a>
             <a href="#merch" style={{ color: 'white', textDecoration: 'none', fontWeight: 900 }}>MERCH</a>
             <a href="#feed" style={{ color: 'white', textDecoration: 'none', fontWeight: 900 }}>FEED</a>
