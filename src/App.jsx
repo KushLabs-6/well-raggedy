@@ -225,7 +225,7 @@ function App() {
 
   const triggerSecretAdmin = () => {
     const pwd = prompt("Enter Secret Admin Password:");
-    if (pwd === 'raggedy2026') {
+    if (pwd === 'froggbossadmin') {
       setIsAdmin(true);
       alert("Admin Mode Unlocked");
     }
