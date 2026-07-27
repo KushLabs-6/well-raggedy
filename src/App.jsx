@@ -186,7 +186,7 @@ function App() {
   };
 
   const handleTourBooking = () => {
-    const text = `*NEW TOUR BOOKING INQUIRY*%0A%0AHi FroggBoss, I am interested in booking a Well Raggedy Skate Tour across Jamaica!`;
+    const text = `*NEW TOUR BOOKING INQUIRY*%0A%0AHi FroggBoss, I am interested in booking a Well Raggedy Tour across Jamaica!`;
     window.open(`https://wa.me/18768659312?text=${text}`, '_blank');
   };
 
@@ -251,13 +251,13 @@ function App() {
       <section className="container" style={{ minHeight: '90vh', display: 'flex', alignItems: 'center' }}>
         <div style={{ maxWidth: '750px', textAlign: 'left' }}>
           <div style={{ display: 'inline-block', background: 'var(--primary-pink)', color: 'white', padding: '0.4rem 1rem', fontFamily: 'var(--font-punk)', transform: 'rotate(-3deg)', marginBottom: '1.5rem', border: '2px solid white' }}>
-            SKATE CULTURE & JAMAICA TOURS
+            AUTHENTIC JAMAICA TOURS
           </div>
           <h1 style={{ fontSize: 'clamp(3.5rem, 10vw, 6.5rem)', textTransform: 'uppercase', lineHeight: 0.9, marginBottom: '2rem' }} className="glitch-text">
             WELL RAGGEDY
           </h1>
           <p style={{ fontSize: '1.3rem', color: 'var(--text-gray)', lineHeight: 1.6, marginBottom: '3rem', maxWidth: '650px' }}>
-            Tour Jamaica like a local. Skate the streets, explore the island, and wear the official uniform. Hosted by FroggBoss Well Raggedy.
+            Tour Jamaica like a local. Explore the island, experience the culture, and wear the official uniform. Hosted by FroggBoss Well Raggedy.
           </p>
           <div style={{ display: 'flex', gap: '2rem', flexWrap: 'wrap' }}>
             <button onClick={handleTourBooking} className="btn-punk">BOOK A TOUR VIA WHATSAPP</button>
@@ -272,9 +272,9 @@ function App() {
       <section id="tours" className="container" style={{ background: '#0D0D11', borderTop: '4px solid var(--border-grunge)', borderBottom: '4px solid var(--border-grunge)', padding: '6rem 2rem' }}>
         <div style={{ textAlign: 'center', marginBottom: '4rem' }}>
           <span className="spray-paint" style={{ fontSize: '1.5rem' }}>ISLAND WIDE</span>
-          <h2 style={{ fontSize: 'clamp(2.5rem, 8vw, 4.5rem)', textTransform: 'uppercase', fontFamily: 'var(--font-punk)', marginTop: '0.5rem' }}>SKATE TOURS</h2>
+          <h2 style={{ fontSize: 'clamp(2.5rem, 8vw, 4.5rem)', textTransform: 'uppercase', fontFamily: 'var(--font-punk)', marginTop: '0.5rem' }}>JAMAICA TOURS</h2>
           <p style={{ color: 'var(--text-gray)', maxWidth: '600px', margin: '0 auto', fontSize: '1.1rem' }}>
-            Hit the streets and explore Jamaica with FroggBoss. Check out our latest tour highlights.
+            Explore Jamaica like a local with FroggBoss. Check out our latest tour highlights.
           </p>
         </div>
         <div style={{ display: 'flex', justifyContent: 'center', gap: '2rem', flexWrap: 'wrap' }}>
