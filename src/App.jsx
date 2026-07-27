@@ -2,10 +2,10 @@ import React, { useState, useEffect, useRef } from 'react';
 import './App.css';
 import SkateGame from './SkateGame';
 import { db } from './firebase';
-import { collection, addDoc, onSnapshot, query, orderBy, deleteDoc, doc } from 'firebase/firestore';
+import { collection, addDoc, onSnapshot, query, orderBy, deleteDoc, doc, setDoc, getDoc, updateDoc, increment, limit } from 'firebase/firestore';
 
 // Merch Categories
-const productsData = [
+const defaultMerch = [
   { 
     id: 'raggedy-hats', 
     name: 'Well Raggedy Hats', 
@@ -61,6 +61,11 @@ function App() {
   const [cart, setCart] = useState([]);
   const [cartOpen, setCartOpen] = useState(false);
   
+  // Admin Data
+  const [merchData, setMerchData] = useState(defaultMerch);
+  const [topScores, setTopScores] = useState([]);
+  const [visitorCount, setVisitorCount] = useState(0);
+
   // Media rotation
   const [currentMediaIndex, setCurrentMediaIndex] = useState(0);
   const [currentTourIndex, setCurrentTourIndex] = useState(0);
@@ -87,17 +92,53 @@ function App() {
 
     // Load Firebase Data
     try {
+      // 1. Tags
       const qTags = query(collection(db, 'graffiti_wall'), orderBy('timestamp', 'asc'));
       const unsubTags = onSnapshot(qTags, (snapshot) => {
         setTags(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
       });
 
+      // 2. Feed
       const qFeed = query(collection(db, 'raggedy_feed'), orderBy('timestamp', 'desc'));
       const unsubFeed = onSnapshot(qFeed, (snapshot) => {
         setFeedPosts(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
       });
 
-      return () => { unsubTags(); unsubFeed(); };
+      // 3. Top Scores
+      const qScores = query(collection(db, 'skate_scores'), orderBy('score', 'desc'), limit(5));
+      const unsubScores = onSnapshot(qScores, (snapshot) => {
+        setTopScores(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+      });
+
+      // 4. Merch
+      const merchDocRef = doc(db, 'site_config', 'merch');
+      const unsubMerch = onSnapshot(merchDocRef, (docSnap) => {
+        if (docSnap.exists() && docSnap.data().items) {
+          setMerchData(docSnap.data().items);
+        } else {
+          setDoc(merchDocRef, { items: defaultMerch });
+        }
+      });
+
+      // 5. Analytics (Visitor Count)
+      const analyticsRef = doc(db, 'analytics', 'visitors');
+      const trackVisit = async () => {
+        if (!sessionStorage.getItem('visited')) {
+          sessionStorage.setItem('visited', 'true');
+          await updateDoc(analyticsRef, { count: increment(1) }).catch(async (e) => {
+             // If doc doesn't exist, create it
+             await setDoc(analyticsRef, { count: 1 });
+          });
+        }
+      };
+      trackVisit();
+      const unsubAnalytics = onSnapshot(analyticsRef, (docSnap) => {
+        if (docSnap.exists()) {
+          setVisitorCount(docSnap.data().count);
+        }
+      });
+
+      return () => { unsubTags(); unsubFeed(); unsubScores(); unsubMerch(); unsubAnalytics(); };
     } catch(e) {
       console.warn("Firebase not properly configured yet.", e);
     }
@@ -231,6 +272,85 @@ function App() {
     }
   };
 
+  const deleteScore = async (id) => {
+    try {
+      await deleteDoc(doc(db, 'skate_scores', id));
+    } catch(e) {
+      console.error("Error deleting score:", e);
+    }
+  };
+
+  const saveMerchConfig = async () => {
+    try {
+      await setDoc(doc(db, 'site_config', 'merch'), { items: merchData });
+      alert("Merch Updated!");
+    } catch(e) {
+      console.error("Error saving merch:", e);
+    }
+  };
+
+  if (isAdmin) {
+    return (
+      <div style={{ padding: '2rem', background: '#0D0D11', minHeight: '100vh', color: 'white', fontFamily: 'sans-serif' }}>
+        <h1 style={{ fontFamily: 'var(--font-punk)', color: 'var(--primary-acid)' }}>FROGGBOSS ADMIN DASHBOARD</h1>
+        <p>Total Website Visits: <strong style={{ color: 'var(--primary-pink)', fontSize: '1.5rem' }}>{visitorCount}</strong></p>
+        <button onClick={() => setIsAdmin(false)} className="btn-punk" style={{ marginBottom: '2rem' }}>EXIT ADMIN</button>
+        
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '2rem' }}>
+          
+          <div style={{ border: '1px solid var(--border-grunge)', padding: '1rem', background: '#111' }}>
+            <h2 style={{ color: 'var(--primary-pink)' }}>Top 5 Skate Scores</h2>
+            {topScores.map(score => (
+              <div key={score.id} style={{ display: 'flex', justifyContent: 'space-between', padding: '0.5rem 0', borderBottom: '1px solid #333' }}>
+                <span>{score.name} - {score.score}pts</span>
+                <button onClick={() => deleteScore(score.id)} style={{ background: 'red', color: 'white', border: 'none', padding: '0.3rem', cursor: 'pointer' }}>Delete</button>
+              </div>
+            ))}
+          </div>
+
+          <div style={{ border: '1px solid var(--border-grunge)', padding: '1rem', background: '#111' }}>
+            <h2 style={{ color: 'var(--primary-pink)' }}>Graffiti Wall Tags</h2>
+            {tags.map(tag => (
+              <div key={tag.id} style={{ display: 'flex', justifyContent: 'space-between', padding: '0.5rem 0', borderBottom: '1px solid #333' }}>
+                <span style={{ color: tag.color }}>{tag.name}</span>
+                <button onClick={() => deleteTag(tag.id)} style={{ background: 'red', color: 'white', border: 'none', padding: '0.3rem', cursor: 'pointer' }}>Delete</button>
+              </div>
+            ))}
+          </div>
+
+        </div>
+
+        <div style={{ border: '1px solid var(--border-grunge)', padding: '1rem', marginTop: '2rem', background: '#111' }}>
+          <h2 style={{ color: 'var(--primary-pink)' }}>Community Feed</h2>
+          <form onSubmit={handlePostFeed} style={{ display: 'flex', gap: '1rem', marginBottom: '1rem', flexWrap: 'wrap' }}>
+            <input type="text" placeholder="Image URL (optional)" value={feedImgUrl} onChange={e => setFeedImgUrl(e.target.value)} style={{ padding: '0.5rem', background: '#000', color: 'white', border: '1px solid var(--border-grunge)' }} />
+            <input type="text" placeholder="Write a post..." value={feedText} onChange={e => setFeedText(e.target.value)} style={{ padding: '0.5rem', flexGrow: 1, background: '#000', color: 'white', border: '1px solid var(--border-grunge)' }} />
+            <button type="submit" className="btn-punk">POST</button>
+          </form>
+          {feedPosts.map(post => (
+            <div key={post.id} style={{ display: 'flex', justifyContent: 'space-between', padding: '0.5rem', background: '#1a1a24', marginBottom: '0.5rem' }}>
+              <span>{post.text} {post.imageUrl ? '(Has Image)' : ''}</span>
+              <button onClick={() => deletePost(post.id)} style={{ background: 'red', color: 'white', border: 'none', padding: '0.3rem', cursor: 'pointer' }}>Delete</button>
+            </div>
+          ))}
+        </div>
+
+        <div style={{ border: '1px solid var(--border-grunge)', padding: '1rem', marginTop: '2rem', background: '#111' }}>
+          <h2 style={{ color: 'var(--primary-pink)' }}>Merch Config (JSON)</h2>
+          <textarea 
+            rows={15} 
+            style={{ width: '100%', background: '#000', color: 'var(--primary-acid)', fontFamily: 'monospace', padding: '1rem', border: '1px solid var(--border-grunge)' }}
+            value={JSON.stringify(merchData, null, 2)}
+            onChange={(e) => {
+              try { setMerchData(JSON.parse(e.target.value)); } catch(err){} 
+            }}
+          />
+          <button onClick={saveMerchConfig} className="btn-punk" style={{ marginTop: '1rem' }}>SAVE MERCH SETTINGS</button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div onClick={playSiteMusic}>
       <div className="crt-overlay"></div>
@@ -330,11 +450,11 @@ function App() {
           <h2 style={{ fontSize: 'clamp(2.5rem, 8vw, 4.5rem)', textTransform: 'uppercase', fontFamily: 'var(--font-punk)', marginTop: '0.5rem' }}>MERCH SHOP</h2>
         </div>
         <div className="merch-grid">
-          {productsData.map((prod) => (
+          {merchData.map((prod) => (
             <div key={prod.id} className="merch-card">
               <div className="merch-img-container">
                 <span className={`merch-badge ${prod.badgeType === 'badge-pink' ? 'badge-limited' : 'badge-acid'}`}>{prod.badge}</span>
-                <img src={prod.images[merchImageIndex % prod.images.length]} alt={prod.name} className="merch-img" />
+                <img src={prod.images && prod.images.length > 0 ? prod.images[merchImageIndex % prod.images.length] : ''} alt={prod.name} className="merch-img" />
               </div>
               <div className="merch-info">
                 <h3 style={{ fontSize: '1.4rem', fontWeight: 900, marginBottom: '0.8rem', color: 'white' }}>{prod.name}</h3>
@@ -355,22 +475,12 @@ function App() {
           <h2 style={{ fontSize: 'clamp(2.5rem, 8vw, 4.5rem)', textTransform: 'uppercase', fontFamily: 'var(--font-punk)', marginTop: '0.5rem' }}>WELL RAGGEDY FEED</h2>
         </div>
         
-        {isAdmin && (
-          <div style={{ maxWidth: '600px', margin: '0 auto 4rem', padding: '2rem', background: '#1a1a24', borderRadius: '12px', border: '2px solid var(--primary-acid)' }}>
-            <h3 style={{ color: 'var(--primary-acid)', marginBottom: '1rem' }}>Admin: Post to Feed</h3>
-            <form onSubmit={handlePostFeed} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              <input type="text" placeholder="Image URL (optional)" value={feedImgUrl} onChange={e => setFeedImgUrl(e.target.value)} style={{ padding: '0.8rem', background: '#000', color: 'white', border: '1px solid var(--border-grunge)' }} />
-              <textarea placeholder="Write a post..." value={feedText} onChange={e => setFeedText(e.target.value)} rows={3} style={{ padding: '0.8rem', background: '#000', color: 'white', border: '1px solid var(--border-grunge)' }} />
-              <button type="submit" className="btn-punk" style={{ alignSelf: 'flex-start' }}>POST</button>
-            </form>
-          </div>
-        )}
+        {/* Admin feed post form moved to dashboard */}
 
         <div style={{ maxWidth: '800px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '2rem' }}>
           {feedPosts.length === 0 ? <p style={{ textAlign: 'center', color: 'var(--text-gray)' }}>No posts yet. Check back soon!</p> : null}
           {feedPosts.map(post => (
             <div key={post.id} style={{ background: '#111116', padding: '2rem', borderRadius: '12px', border: '1px solid var(--border-grunge)' }}>
-              {isAdmin && <button onClick={() => deletePost(post.id)} style={{ float: 'right', background: 'red', color: 'white', border: 'none', padding: '0.5rem', cursor: 'pointer' }}>Delete</button>}
               {post.imageUrl && <img src={post.imageUrl} alt="Feed Post" style={{ width: '100%', maxHeight: '400px', objectFit: 'cover', borderRadius: '8px', marginBottom: '1rem' }} />}
               <p style={{ fontSize: '1.2rem', lineHeight: 1.6 }}>{post.text}</p>
             </div>
@@ -390,7 +500,6 @@ function App() {
               <span 
                 key={tag.id} 
                 className="graffiti-tag" 
-                onClick={() => isAdmin && deleteTag(tag.id)}
                 style={{ 
                   color: tag.color, 
                   position: 'absolute', 
@@ -398,7 +507,7 @@ function App() {
                   top: `${tag.y}%`, 
                   transform: `rotate(${tag.rotate}deg)`,
                   textShadow: `0 0 10px ${tag.color}80`,
-                  cursor: isAdmin ? 'pointer' : 'default'
+                  cursor: 'default'
                 }}
               >
                 {tag.name}
