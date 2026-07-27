@@ -363,6 +363,8 @@ function App() {
           autoPlay 
           loop 
           muted 
+          playsInline
+          disablePictureInPicture
         >
           <source src={mediaPool[currentMediaIndex].src} type="video/mp4" />
         </video>
